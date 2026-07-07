@@ -136,4 +136,14 @@ describe('LessonPlayer', () => {
     render(<LessonPlayer script={makeDummyScript()} onComplete={() => {}} seed={42} />)
     expect(screen.getByText(/Step0: face/).textContent).toBe(firstText)
   })
+
+  it('with no seed prop at all, completes via Next without an infinite render loop (regression: a Math.random() default parameter re-evaluates every render)', () => {
+    const onComplete = vi.fn()
+    render(<LessonPlayer script={makeDummyScript()} onComplete={onComplete} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Next' })) // -> final (practice) step
+    expect(onComplete).toHaveBeenCalledTimes(1)
+    fireEvent.click(screen.getByRole('button', { name: 'Face A' }))
+    expect(screen.getByRole('status')).toHaveTextContent('Correct.')
+  })
 })

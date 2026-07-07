@@ -39,8 +39,16 @@ interface PracticeState {
   readonly chosen: number | null
 }
 
-export function LessonPlayer({ script, onComplete, resumeAt = 0, seed = Math.floor(Math.random() * 2 ** 31) }: LessonPlayerProps): JSX.Element {
+export function LessonPlayer({ script, onComplete, resumeAt = 0, seed: seedProp }: LessonPlayerProps): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
+  // A `seed = Math.random()` default parameter would re-evaluate on every render (default
+  // expressions run per-call, not once), breaking `net`'s memoization below and re-firing the pose
+  // effect forever once a practice step exists. Freezing the fallback in a ref makes the
+  // no-seed-provided case just as stable as an explicit seed.
+  const fallbackSeedRef = useRef<number | null>(null)
+  fallbackSeedRef.current ??= Math.floor(Math.random() * 2 ** 31)
+  const seed = seedProp ?? fallbackSeedRef.current
+
   const net = useMemo(() => script.makeProblem(createRng(seed)), [script, seed])
   const problem = useMemo(() => buildLessonProblem(net, seed), [net, seed])
   const steps = useMemo(() => script.buildSteps(net), [script, net])
