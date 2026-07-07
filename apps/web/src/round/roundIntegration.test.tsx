@@ -7,7 +7,14 @@ import { computeSummary, RoundMachine, type CompletedItem, type RoundState } fro
 
 vi.mock('../hooks/useProblemScene', () => ({
   useProblemScene: () => ({
-    scene: { onSelect: () => () => {}, showFeedback: vi.fn(), playFold: vi.fn().mockResolvedValue(undefined) },
+    scene: {
+      onSelect: () => () => {},
+      showFeedback: vi.fn(),
+      playFold: vi.fn().mockResolvedValue(undefined),
+      setInteractive: vi.fn(),
+      highlight: vi.fn(),
+      anchors: { clearHighlight: vi.fn(), subscribe: vi.fn(() => () => {}) },
+    },
     error: null,
   }),
 }))

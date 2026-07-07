@@ -5,12 +5,14 @@ import { PlayScreen } from './screens/PlayScreen'
 import { ReviewScreen, type ReviewRequest } from './screens/ReviewScreen'
 import { RoundConfigScreen } from './screens/RoundConfigScreen'
 import { SummaryScreen } from './screens/SummaryScreen'
+import { TrainingHubScreen } from './screens/TrainingHubScreen'
 import { RoundMachine, type RoundState } from './round/roundMachine'
 import { DexieSink } from './storage/DexieSink'
 import { DEFAULT_PROFILE_ID, openDb, OpenFoldDB } from './storage/db'
 import { InMemorySink } from './telemetry/InMemorySink'
 import type { TelemetrySink } from './telemetry/TelemetrySink'
 import type { SessionConfig } from './telemetry/types'
+import { ExplanationPanel } from './training/ExplanationPanel'
 
 export interface AppProps {
   readonly sink?: TelemetrySink
@@ -35,7 +37,7 @@ async function boot(sinkOverride: TelemetrySink | undefined, dbOverride: OpenFol
   }
 }
 
-type View = 'round' | 'dashboard' | 'history'
+type View = 'round' | 'dashboard' | 'history' | 'training'
 
 // Stable reference so useSyncExternalStore's getSnapshot doesn't return a fresh object every call
 // before the machine exists (a new object identity each render would loop useSyncExternalStore).
@@ -88,6 +90,9 @@ export function App({ sink, db }: AppProps = {}): JSX.Element {
         <button type="button" onClick={() => setView('round')}>
           Play
         </button>
+        <button type="button" onClick={() => setView('training')}>
+          Training
+        </button>
         {!bootResult.usingFallback && (
           <>
             <button type="button" onClick={() => setView('dashboard')}>
@@ -102,6 +107,7 @@ export function App({ sink, db }: AppProps = {}): JSX.Element {
 
       {view === 'dashboard' && <DashboardScreen db={bootResult.db} profileId={DEFAULT_PROFILE_ID} />}
       {view === 'history' && <HistoryScreen db={bootResult.db} profileId={DEFAULT_PROFILE_ID} onReview={setReviewRequest} />}
+      {view === 'training' && <TrainingHubScreen db={bootResult.db} profileId={DEFAULT_PROFILE_ID} />}
       {view === 'round' && renderRoundView()}
     </div>
   )
@@ -123,6 +129,7 @@ export function App({ sink, db }: AppProps = {}): JSX.Element {
           onSelect={(index) => machine.send({ type: 'SELECT', index })}
           onNext={() => machine.send({ type: 'NEXT' })}
           onAbort={() => machine.send({ type: 'ABORT' })}
+          feedbackSlot={(props) => <ExplanationPanel {...props} />}
         />
       )
     }

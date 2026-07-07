@@ -6,7 +6,7 @@ import type { LessonScript, PracticeQuestion } from './lessonTypes'
 
 export interface LessonPlayerProps {
   readonly script: LessonScript
-  readonly onComplete: () => void
+  readonly onComplete: (finalStepIndex: number) => void
   readonly resumeAt?: number
   /** Deterministic per lesson run; tests pin this. Defaults to a fresh random draw. */
   readonly seed?: number
@@ -69,7 +69,7 @@ export function LessonPlayer({ script, onComplete, resumeAt = 0, seed = Math.flo
   useEffect(() => {
     if (stepIndex === lastStepIndex && !completedRef.current) {
       completedRef.current = true
-      onComplete()
+      onComplete(lastStepIndex)
     }
   }, [stepIndex, lastStepIndex, onComplete])
 

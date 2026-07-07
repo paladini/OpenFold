@@ -10,7 +10,14 @@ import type { SessionId } from './telemetry/types'
 
 vi.mock('./hooks/useProblemScene', () => ({
   useProblemScene: () => ({
-    scene: { onSelect: () => () => {}, showFeedback: vi.fn(), playFold: vi.fn().mockResolvedValue(undefined), setInteractive: vi.fn() },
+    scene: {
+      onSelect: () => () => {},
+      showFeedback: vi.fn(),
+      playFold: vi.fn().mockResolvedValue(undefined),
+      setInteractive: vi.fn(),
+      highlight: vi.fn(),
+      anchors: { clearHighlight: vi.fn(), subscribe: vi.fn(() => () => {}) },
+    },
     error: null,
   }),
 }))
