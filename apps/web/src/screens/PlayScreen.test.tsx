@@ -137,7 +137,7 @@ describe('PlayScreen', () => {
   it('invokes the feedbackSlot render prop with the item and result', () => {
     const feedbackSlot = vi.fn(() => <span>slot</span>)
     render(<PlayScreen state={feedbackState(RESULT)} onSceneReady={() => {}} onSelect={() => {}} onNext={() => {}} onAbort={() => {}} feedbackSlot={feedbackSlot} />)
-    expect(feedbackSlot).toHaveBeenCalledWith({ item: { mode: 'fold', problem: FOLD_PROBLEM }, result: RESULT })
+    expect(feedbackSlot).toHaveBeenCalledWith({ item: { mode: 'fold', problem: FOLD_PROBLEM }, result: RESULT, scene: fakeScene })
     expect(screen.getByText('slot')).toBeInTheDocument()
   })
 

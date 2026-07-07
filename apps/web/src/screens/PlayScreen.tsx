@@ -1,3 +1,4 @@
+import type { ProblemScene } from '@openfold/render'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useProblemScene } from '../hooks/useProblemScene'
 import type { CompletedItem, RoundItem, RoundState } from '../round/roundMachine'
@@ -5,6 +6,7 @@ import type { CompletedItem, RoundItem, RoundState } from '../round/roundMachine
 export interface FeedbackSlotProps {
   readonly item: RoundItem
   readonly result: CompletedItem
+  readonly scene: ProblemScene | null
 }
 
 export interface PlayScreenProps {
@@ -99,7 +101,7 @@ export function PlayScreen({ state, onSceneReady, onSelect, onNext, onAbort, fee
               Replay fold
             </button>
           )}
-          {feedbackSlot?.({ item: state.item, result: state.lastResult })}
+          {feedbackSlot?.({ item: state.item, result: state.lastResult, scene })}
           <button type="button" onClick={onNext}>
             Next
           </button>
