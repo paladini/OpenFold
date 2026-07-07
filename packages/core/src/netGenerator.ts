@@ -11,7 +11,7 @@ import type { CubeFace, DecoratedNet, FaceId, GenerationParams, NetFace, Rotatio
  *   symbol-mirror distractor is actually detectable -- a 4-fold glyph would make those distractor
  *   kinds invisible and defeat the point of the hard tier.
  */
-const GLYPH_LIBRARY = {
+export const GLYPH_LIBRARY = {
   asymmetric: ['arrow', 'flag', 'l-shape', 'boot', 'key', 'lightning'],
   '2-fold': ['bowtie', 'hourglass', 'zigzag-s', 's-curve'],
   // A wide 4-fold pool matters more than it looks: with only opposite-swap/adjacent-permutation

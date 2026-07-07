@@ -81,7 +81,7 @@ export function generateProblem(seed: number, paramsOrPreset: GenerationParams |
 
 export * from './types'
 export { foldNet } from './foldMapper'
-export { generateNet } from './netGenerator'
+export { generateNet, GLYPH_LIBRARY } from './netGenerator'
 export { generateDistractors, DistractorExhaustionError } from './distractors'
 export { canonicalize, areEquivalent } from './canonicalizer'
 export { oppositePairs, orientationTrace, explainDistractor } from './heuristics'
