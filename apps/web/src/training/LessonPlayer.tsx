@@ -43,14 +43,15 @@ export function LessonPlayer({ script, onComplete, resumeAt = 0, seed = Math.flo
   const containerRef = useRef<HTMLDivElement>(null)
   const net = useMemo(() => script.makeProblem(createRng(seed)), [script, seed])
   const problem = useMemo(() => buildLessonProblem(net, seed), [net, seed])
+  const steps = useMemo(() => script.buildSteps(net), [script, net])
   const { scene, error } = useProblemScene(containerRef, problem)
 
   const [stepIndex, setStepIndex] = useState(resumeAt)
   const [practiceState, setPracticeState] = useState<PracticeState | null>(null)
   const completedRef = useRef(false)
 
-  const step = script.steps[stepIndex]
-  const lastStepIndex = script.steps.length - 1
+  const step = steps[stepIndex]
+  const lastStepIndex = steps.length - 1
 
   useEffect(() => {
     if (!scene || !step) return
@@ -101,7 +102,7 @@ export function LessonPlayer({ script, onComplete, resumeAt = 0, seed = Math.flo
   return (
     <div>
       <p>
-        {script.title} -- step {stepIndex + 1} of {script.steps.length}
+        {script.title} -- step {stepIndex + 1} of {steps.length}
       </p>
       {error && <p role="alert">{error.message}</p>}
       <div style={{ position: 'relative' }}>

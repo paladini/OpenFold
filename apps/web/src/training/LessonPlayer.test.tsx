@@ -32,7 +32,7 @@ function makeDummyScript(): LessonScript {
     title: 'Dummy Lesson',
     estMinutes: 1,
     makeProblem: (rng: Rng): DecoratedNet => generateNet(rng, PARAMS),
-    steps: [
+    buildSteps: () => [
       { kind: 'exposition', foldProgress: 0, highlights: [{ kind: 'face', id: '0' }], callouts: [{ anchor: 'face:0', text: (net) => `Step0: face ${net.faces[0]?.id}` }] },
       { kind: 'exposition', foldProgress: 1, highlights: [{ kind: 'face', id: '1' }], callouts: [{ anchor: 'face:1', text: () => 'Step1: folded' }] },
       {

@@ -47,5 +47,12 @@ export interface LessonScript {
   readonly estMinutes: number
   /** Procedural per lesson run -- content never hardcodes geometry (design: makeProblem(rng)). */
   makeProblem(rng: Rng): DecoratedNet
-  readonly steps: readonly LessonStep[]
+  /**
+   * Highlight/callout targets need real FaceIds from the actual generated net (a hinge between
+   * face 2 and face 5 doesn't exist as a fixed fact -- it depends on which net this run drew), so
+   * the step list is built from the net rather than declared statically. For a given net this is
+   * still a pure, deterministic list -- indexing into it is still a pure function of step index,
+   * which is what backward navigation relies on.
+   */
+  buildSteps(net: DecoratedNet): readonly LessonStep[]
 }
