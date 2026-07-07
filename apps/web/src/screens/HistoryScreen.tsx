@@ -1,14 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { OpenFoldDB } from '../storage/db'
 import { sessionDetail, sessionList, type SessionListItem } from '../storage/queries'
-import type { AttemptRecord, ItemMode, SessionConfig } from '../telemetry/types'
-
-export interface ReviewRequest {
-  readonly seed: number
-  readonly config: SessionConfig
-  readonly mode: ItemMode
-  readonly chosenIndex: number | null
-}
+import type { AttemptRecord, SessionConfig } from '../telemetry/types'
+import type { ReviewRequest } from './ReviewScreen'
 
 export interface HistoryScreenProps {
   readonly db: OpenFoldDB
