@@ -1,6 +1,7 @@
+import { foldNet } from './foldMapper'
 import { CANONICAL_NETS } from './netCatalog'
 import type { Rng } from './prng'
-import type { DecoratedNet, FaceId, GenerationParams, NetFace, Rotation, Symbol, SymbolSymmetry, SymbolTier } from './types'
+import type { CubeFace, DecoratedNet, FaceId, GenerationParams, NetFace, Rotation, Symbol, SymbolSymmetry, SymbolTier } from './types'
 
 /**
  * Glyph pools grouped by symmetry class. Tier selection is pedagogically deliberate:
@@ -13,7 +14,11 @@ import type { DecoratedNet, FaceId, GenerationParams, NetFace, Rotation, Symbol,
 const GLYPH_LIBRARY = {
   asymmetric: ['arrow', 'flag', 'l-shape', 'boot', 'key', 'lightning'],
   '2-fold': ['bowtie', 'hourglass', 'zigzag-s', 's-curve'],
-  '4-fold': ['circle-dot', 'plus-ring', 'square-ring', 'diamond-ring'],
+  // A wide 4-fold pool matters more than it looks: with only opposite-swap/adjacent-permutation
+  // viable against 4-fold decorations (rotation/mirror are invisible on them), repeated glyphs
+  // shrink the distinguishable-perturbation space fast on a sparsely decorated cube (easy tier
+  // decorates only 3 of 6 faces). A wider pool keeps repeats rare.
+  '4-fold': ['circle-dot', 'plus-ring', 'square-ring', 'diamond-ring', 'triangle-ring', 'hex-ring', 'star-ring', 'cross-dot'],
 } as const satisfies Record<SymbolSymmetry, readonly string[]>
 
 function poolForTier(tier: SymbolTier): readonly Symbol[] {
@@ -93,6 +98,29 @@ function isDegenerate(symbols: ReadonlyArray<NetFace['symbol']>): boolean {
   return first.symmetry === '4-fold' && decorated.every((s) => s.glyphId === first.glyphId)
 }
 
+const OPPOSITE_CUBE_FACE_PAIRS: readonly (readonly [CubeFace, CubeFace])[] = [
+  ['+x', '-x'],
+  ['+y', '-y'],
+  ['+z', '-z'],
+]
+
+/**
+ * When every glyph is 4-fold (the 'distinct' tier), rotation carries no information at all, so a
+ * fully-blank opposite face pair hands the cube a "free" 180-degree rotation symmetry (that pair
+ * swaps invisibly under it). Combined with all-4-fold content elsewhere, that hidden symmetry can
+ * silently cancel out structural distractor perturbations on unrelated face pairs -- discovered
+ * via exhaustion failures in generateProblem's own test suite, not a hypothetical. Since only
+ * opposite-swap/adjacent-permutation are ever viable against 4-fold decorations, this check keeps
+ * that already-narrow perturbation space from collapsing further.
+ */
+function hasFullyBlankOppositePair(faceAssignment: Readonly<Record<FaceId, CubeFace>>, glyphByFaceId: ReadonlyMap<FaceId, NetFace['symbol']>): boolean {
+  const cubeFaceHasGlyph = new Map<CubeFace, boolean>()
+  for (const [faceId, cubeFace] of Object.entries(faceAssignment) as [string, CubeFace][]) {
+    cubeFaceHasGlyph.set(cubeFace, glyphByFaceId.get(Number(faceId) as FaceId) !== null)
+  }
+  return OPPOSITE_CUBE_FACE_PAIRS.some(([a, b]) => !cubeFaceHasGlyph.get(a) && !cubeFaceHasGlyph.get(b))
+}
+
 const MAX_REDRAWS = 20
 
 export function generateNet(rng: Rng, params: GenerationParams): DecoratedNet {
@@ -105,27 +133,34 @@ export function generateNet(rng: Rng, params: GenerationParams): DecoratedNet {
   if (!canonical) throw new Error(`internal error: unknown netId ${netId}`)
   const symmetryOp = symRng.int(8)
   const cells = applyD4(canonical.cells, symmetryOp)
+  const adjacency = canonical.adjacency.map(([a, b]): [FaceId, FaceId] => [a as FaceId, b as FaceId])
 
   let symbols: Array<NetFace['symbol']> = []
+  let faces: NetFace[] = []
+  let succeeded = false
   for (let attempt = 0; attempt < MAX_REDRAWS; attempt++) {
     symbols = decorate(decorRng, canonical.cells.length, params)
-    if (!isDegenerate(symbols)) break
+    if (isDegenerate(symbols)) continue
+
+    faces = cells.map((cell, i) => ({
+      id: i as FaceId,
+      cell,
+      symbol: symbols[i] ?? null,
+      symbolRotation: symbols[i] ? decorRng.pick(ROTATION_CHOICES) : 0,
+    }))
+
+    if (params.symbolTier === 'distinct') {
+      const { plan } = foldNet({ netId, symmetryOp, faces, adjacency })
+      const glyphByFaceId = new Map(faces.map((f) => [f.id, f.symbol]))
+      if (hasFullyBlankOppositePair(plan.faceAssignment, glyphByFaceId)) continue
+    }
+
+    succeeded = true
+    break
   }
-  if (isDegenerate(symbols)) {
-    throw new Error('generateNet: exhausted redraws attempting to avoid a degenerate all-identical decoration')
+  if (!succeeded) {
+    throw new Error('generateNet: exhausted redraws attempting to avoid a degenerate or under-covered decoration')
   }
 
-  const faces: NetFace[] = cells.map((cell, i) => ({
-    id: i as FaceId,
-    cell,
-    symbol: symbols[i] ?? null,
-    symbolRotation: symbols[i] ? decorRng.pick(ROTATION_CHOICES) : 0,
-  }))
-
-  return {
-    netId,
-    symmetryOp,
-    faces,
-    adjacency: canonical.adjacency.map(([a, b]) => [a as FaceId, b as FaceId]),
-  }
+  return { netId, symmetryOp, faces, adjacency }
 }
