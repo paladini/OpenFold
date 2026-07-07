@@ -24,6 +24,15 @@ function makeCube(overrides: Partial<Record<CubeFace, Partial<CubeFaceState>>> =
 
 const FULLY_BLANK_CUBE: CubeState = makeCube({}, [null, null, null, null, null, null] as unknown as string[])
 
+function fourFoldCube(glyphs: Partial<Record<CubeFace, string | null>>): CubeState {
+  const faces = {} as Record<CubeFace, CubeFaceState>
+  for (const face of FACE_ORDER) {
+    const glyphId = face in glyphs ? (glyphs[face] as string | null) : null
+    faces[face] = { glyphId, symmetry: '4-fold', rotation: 0, mirrored: false }
+  }
+  return { faces }
+}
+
 describe('generateDistractors: basic contract', () => {
   it('returns exactly 4 distractors, each carrying kind and affectedFaces', () => {
     const cube = makeCube()
@@ -212,5 +221,37 @@ describe('generateDistractors: individual perturbation kinds', () => {
       expect(mirror.cube.faces[face].mirrored).toBe(!answer.faces[face].mirrored)
     }
     expect(found).toBe(true)
+  })
+})
+
+describe('generateDistractors: regression -- sparse all-4-fold decorations', () => {
+  // Discovered via exhaustion failures in generateProblem's test suite: with only 4-fold glyphs
+  // (rotation carries no information), opposite-swap/adjacent-permutation can hit hidden whole-cube
+  // rotation symmetries that make a "perturbation" a no-op in disguise. Exhaustive enumeration
+  // (rather than a handful of random samples) must still find the many other genuinely
+  // distinguishing candidates in these cases.
+
+  it('succeeds when one full corner is decorated and the opposite corner is blank', () => {
+    // A pure 3-cycle of the decorated corner equals a real 120-degree rotation here (the opposite
+    // corner is uniformly blank), so those 2 of 16 corner-cycle candidates are correctly rejected
+    // -- but the other 12 mixed-corner cycles remain valid, plus opposite-swap.
+    const answer = fourFoldCube({ '+x': 'circle-dot', '+y': 'plus-ring', '+z': 'square-ring' })
+    for (let seed = 0; seed < 50; seed++) {
+      const distractors = generateDistractors(answer, createRng(seed), expandPreset('easy'))
+      expect(distractors).toHaveLength(4)
+      for (const d of distractors) expect(areEquivalent(d.cube, answer)).toBe(false)
+    }
+  })
+
+  it('exhausts gracefully (rather than producing an ambiguous set) when a duplicate 4-fold glyph compounds the corner symmetry', () => {
+    // Two 4-fold glyphs on adjacent faces sharing the SAME glyph, third face distinct, opposite
+    // corner blank: this stacks a duplicate-glyph symmetry on top of the corner/rotation one and
+    // can exhaust distractors.ts in isolation. This fixture bypasses generateNet's own guard
+    // against it (see netGenerator's hasFullyBlankOppositePair) -- generateProblem's stress
+    // testing (index.test.ts) confirms the guarded pipeline avoids this in practice; this test
+    // documents that distractors.ts alone still fails *safely* (a typed error, never an
+    // ambiguous/duplicate distractor set) rather than silently.
+    const answer = fourFoldCube({ '+x': 'cross-dot', '+y': 'cross-dot', '+z': 'star-ring' })
+    expect(() => generateDistractors(answer, createRng(0), expandPreset('easy'))).toThrow(DistractorExhaustionError)
   })
 })
