@@ -12,7 +12,7 @@ export interface SessionRow {
   readonly profileId: string
   readonly startedAt: number
   readonly finishedAt: number | null
-  readonly outcome: 'completed' | 'aborted' | 'failed'
+  readonly outcome: 'completed' | 'aborted' | 'failed' | null // null while the session is still open
   readonly config: SessionConfig
   readonly summary: SessionSummary | null
 }
