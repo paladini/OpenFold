@@ -1,0 +1,44 @@
+{
+  "sessions": [
+    {
+      "id": "v0-session-1",
+      "startedAt": 1700000000000,
+      "finishedAt": 1700000060000,
+      "outcome": "completed",
+      "config": { "difficulty": "easy", "problemCount": 2, "timeLimitMs": 30000, "mode": "fold", "sessionSeed": 1 },
+      "summary": { "attempts": 2, "correct": 1, "accuracy": 0.5, "meanResponseMs": 1500, "medianResponseMs": 1500 }
+    }
+  ],
+  "attempts": [
+    {
+      "id": "v0-attempt-1",
+      "sessionId": "v0-session-1",
+      "itemIndex": 0,
+      "seed": 101,
+      "mode": "fold",
+      "difficulty": "easy",
+      "chosenIndex": 0,
+      "correctIndex": 0,
+      "correct": true,
+      "timedOut": false,
+      "suspect": false,
+      "responseMs": 1000,
+      "answeredAt": 1700000010000
+    },
+    {
+      "id": "v0-attempt-2",
+      "sessionId": "v0-session-1",
+      "itemIndex": 1,
+      "seed": 102,
+      "mode": "fold",
+      "difficulty": "easy",
+      "chosenIndex": 3,
+      "correctIndex": 1,
+      "correct": false,
+      "timedOut": false,
+      "suspect": false,
+      "responseMs": 2000,
+      "answeredAt": 1700000020000
+    }
+  ]
+}

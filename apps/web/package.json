@@ -13,8 +13,10 @@
   "dependencies": {
     "@openfold/core": "workspace:*",
     "@openfold/render": "workspace:*",
+    "dexie": "^4.4.4",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "recharts": "^3.9.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
@@ -23,6 +25,7 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^3.0.5",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^25.0.1",
     "typescript": "^5.7.3",
     "vite": "^6.0.7",
