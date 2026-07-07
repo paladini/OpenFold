@@ -58,6 +58,7 @@ export class ProblemScene {
   private answerRigs: CubeRig[] = []
   private animator: FoldAnimator | null = null
   private picker: Picker | null = null
+  private canvas: HTMLCanvasElement | null = null
   anchors: AnchorTracker | null = null
   private container: HTMLElement | null = null
   private problem: FoldProblem | null = null
@@ -103,6 +104,9 @@ export class ProblemScene {
       return rig
     })
 
+    this.camera.updateMatrixWorld(true)
+    this.scene.updateMatrixWorld(true)
+
     this.animator = new FoldAnimator(this.netRig.hinges, {})
     this.cameraRig = new CameraRig(this.camera, canvas)
 
@@ -111,6 +115,8 @@ export class ProblemScene {
     this.picker.onSelect((index) => {
       for (const cb of this.selectListeners) cb(index)
     })
+    this.canvas = canvas
+    this.canvas.addEventListener('pointerdown', this.handlePointerDown)
 
     this.anchors = new AnchorTracker(this.camera, {
       viewportSize: () => ({ width: this.container?.clientWidth || 1, height: this.container?.clientHeight || 1 }),
@@ -121,6 +127,12 @@ export class ProblemScene {
     this.renderLoop = new RenderLoop(canvas, {})
     this.renderLoop.start(() => {
       this.cameraRig?.update()
+      // Ensure this frame's fold/camera updates are reflected before anchors/picking read world
+      // transforms -- real WebGLRenderer.render() does this internally too, but doing it
+      // explicitly means anchors are never a frame stale and picking works even before the
+      // first render (e.g. a click during a test with a no-op renderer).
+      this.scene?.updateMatrixWorld(true)
+      this.camera?.updateMatrixWorld(true)
       this.anchors?.tick()
       if (this.scene && this.camera) this.renderer?.render(this.scene, this.camera)
     })
@@ -131,6 +143,14 @@ export class ProblemScene {
     }
 
     this.mounted = true
+  }
+
+  private readonly handlePointerDown = (event: PointerEvent): void => {
+    if (!this.canvas || !this.picker) return
+    const rect = this.canvas.getBoundingClientRect()
+    const ndcX = ((event.clientX - rect.left) / rect.width) * 2 - 1
+    const ndcY = -(((event.clientY - rect.top) / rect.height) * 2 - 1)
+    this.picker.handlePointerDown(ndcX, ndcY)
   }
 
   private detectReducedMotion(): boolean {
@@ -253,6 +273,7 @@ export class ProblemScene {
   }
 
   dispose(): void {
+    this.canvas?.removeEventListener('pointerdown', this.handlePointerDown)
     this.renderLoop?.dispose()
     this.animator?.dispose()
     this.cameraRig?.dispose()
@@ -266,6 +287,7 @@ export class ProblemScene {
     this.camera = null
     this.renderer = null
     this.renderLoop = null
+    this.canvas = null
     this.cameraRig = null
     this.atlas = null
     this.netRig = null

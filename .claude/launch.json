@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "render-demo",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@openfold/render", "run", "demo"],
+      "port": 5173
+    }
+  ]
+}

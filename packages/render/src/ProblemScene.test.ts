@@ -5,6 +5,10 @@ import { installFakeCanvasContext } from './testSupport/fakeCanvasContext'
 
 beforeAll(() => {
   installFakeCanvasContext()
+  // jsdom doesn't implement the Pointer Capture API; OrbitControls calls it on pointerdown.
+  const proto = HTMLElement.prototype as unknown as { setPointerCapture?: (id: number) => void; releasePointerCapture?: (id: number) => void }
+  proto.setPointerCapture ??= () => {}
+  proto.releasePointerCapture ??= () => {}
 })
 
 function makeFakeRenderer(canvas: HTMLCanvasElement): MinimalRenderer {
@@ -117,6 +121,33 @@ describe('ProblemScene: selection wiring', () => {
     const unsubscribe = scene.onSelect((i) => selected.push(i))
     expect(typeof unsubscribe).toBe('function')
     expect(() => unsubscribe()).not.toThrow()
+    scene.dispose()
+  })
+
+  it('a real pointerdown event on the canvas at an answer cube selects it', () => {
+    const problem = generateProblem(6, 'easy')
+    const scene = new ProblemScene()
+    const container = makeContainer()
+    scene.mount(container, problem, { createRenderer: makeFakeRenderer })
+
+    const canvas = container.querySelector('canvas') as HTMLCanvasElement
+    canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width: 800, height: 600 }) as DOMRect
+
+    // Answer cube index 2 sits at world x=0, y=ANSWER_Y, z=0 (see ProblemScene's own layout
+    // constants); project it through the same camera to get its expected client coordinates.
+    const camera = (scene as unknown as { camera: import('three').PerspectiveCamera }).camera
+    const answerRigs = (scene as unknown as { answerRigs: Array<{ group: import('three').Group }> }).answerRigs
+    const worldPos = answerRigs[2]?.group.position.clone() as import('three').Vector3
+    const ndc = worldPos.project(camera)
+    const clientX = ((ndc.x + 1) / 2) * 800
+    const clientY = ((1 - ndc.y) / 2) * 600
+
+    const selected: number[] = []
+    scene.onSelect((i) => selected.push(i))
+    // jsdom doesn't implement PointerEvent; MouseEvent carries the same clientX/clientY the
+    // handler reads, and listener dispatch matches on the event type string either way.
+    canvas.dispatchEvent(new MouseEvent('pointerdown', { clientX, clientY, bubbles: true }))
+    expect(selected).toEqual([2])
     scene.dispose()
   })
 
