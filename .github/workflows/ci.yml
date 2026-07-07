@@ -22,6 +22,7 @@ jobs:
       - run: pnpm -w typecheck
       - run: pnpm -w lint
       - run: pnpm -w test
+      - run: pnpm --filter @openfold/core test:coverage
       - run: pnpm -w build
 
   desktop:
