@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { ConfigValidationError, validateSessionConfig } from '../round/roundMachine'
 import type { Difficulty, RoundMode, SessionConfig } from '../telemetry/types'
+import { randomSessionSeed } from './randomSeed'
 
 export const DEFAULT_ROUND_CONFIG: Omit<SessionConfig, 'sessionSeed'> = {
   difficulty: 'medium',
@@ -15,11 +16,7 @@ export interface RoundConfigScreenProps {
   readonly generateSeed?: () => number
 }
 
-function defaultGenerateSeed(): number {
-  return Math.floor(Math.random() * 2 ** 31)
-}
-
-export function RoundConfigScreen({ initialConfig, onStart, generateSeed = defaultGenerateSeed }: RoundConfigScreenProps): JSX.Element {
+export function RoundConfigScreen({ initialConfig, onStart, generateSeed = randomSessionSeed }: RoundConfigScreenProps): JSX.Element {
   const base = initialConfig ?? DEFAULT_ROUND_CONFIG
   const [difficulty, setDifficulty] = useState<Difficulty>(base.difficulty)
   const [problemCount, setProblemCount] = useState(base.problemCount)
