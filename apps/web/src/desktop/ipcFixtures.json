@@ -1,0 +1,10 @@
+{
+  "unknownMethod": {
+    "request": { "id": "fixture-1", "method": "sqliteQuery" },
+    "response": { "id": "fixture-1", "ok": false, "error": { "code": "unknown_method", "message": "no such method: sqliteQuery" } }
+  },
+  "malformed": {
+    "request": "{ not json",
+    "response": { "id": "unknown", "ok": false, "error": { "code": "malformed_request", "message": "request body is not a valid IPC envelope" } }
+  }
+}

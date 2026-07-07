@@ -123,4 +123,29 @@ mod tests {
         assert_eq!(response["result"]["protocolVersion"], 1);
         assert_eq!(PROTOCOL_VERSION, 1);
     }
+
+    /// Kept aligned with apps/web/src/desktop/bridge.test.ts, which reads the same file --
+    /// both suites assert against one frozen source of truth for the wire shape instead of two
+    /// hand-copied literals that could silently drift apart.
+    const SHARED_FIXTURES: &str = include_str!("../../../apps/web/src/desktop/ipcFixtures.json");
+
+    #[test]
+    fn the_shared_unknown_method_fixture_round_trips_through_route() {
+        let fixtures: Value = serde_json::from_str(SHARED_FIXTURES).expect("shared fixture file must be valid JSON");
+        let request = &fixtures["unknownMethod"]["request"];
+        let expected_response = &fixtures["unknownMethod"]["response"];
+
+        let actual = parse(&route(&request.to_string()));
+        assert_eq!(&actual, expected_response);
+    }
+
+    #[test]
+    fn the_shared_malformed_fixture_round_trips_through_route() {
+        let fixtures: Value = serde_json::from_str(SHARED_FIXTURES).expect("shared fixture file must be valid JSON");
+        let raw_request = fixtures["malformed"]["request"].as_str().expect("malformed fixture request is a raw string, not JSON");
+        let expected_response = &fixtures["malformed"]["response"];
+
+        let actual = parse(&route(raw_request));
+        assert_eq!(&actual, expected_response);
+    }
 }
