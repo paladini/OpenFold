@@ -1,19 +1,25 @@
 import 'fake-indexeddb/auto'
 import { generateNet, type DecoratedNet, type GenerationParams, type Rng } from '@openfold/core'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_PROFILE_ID, OpenFoldDB, openDb } from '../storage/db'
 import type { LessonScript } from '../training/lessonTypes'
 import { TrainingHubScreen } from './TrainingHubScreen'
 
 const PARAMS: GenerationParams = { decoratedFaces: 4, symbolTier: 'distinct', distractorMix: 'balanced', netBias: 'uniform' }
 
+// A stable reference across renders, matching the real useProblemScene hook (it only creates a
+// new scene when [containerRef, problem] change). A fresh literal per call would make
+// LessonPlayer's pose effect re-fire every render forever once a practice step exists.
+let fakeScene: { setProgress: ReturnType<typeof vi.fn>; setInteractive: ReturnType<typeof vi.fn>; highlight: ReturnType<typeof vi.fn>; anchors: { clearHighlight: ReturnType<typeof vi.fn>; subscribe: ReturnType<typeof vi.fn> } }
+
 vi.mock('../hooks/useProblemScene', () => ({
-  useProblemScene: () => ({
-    scene: { setProgress: vi.fn(), setInteractive: vi.fn(), highlight: vi.fn(), anchors: { clearHighlight: vi.fn(), subscribe: vi.fn(() => () => {}) } },
-    error: null,
-  }),
+  useProblemScene: () => ({ scene: fakeScene, error: null }),
 }))
+
+beforeEach(() => {
+  fakeScene = { setProgress: vi.fn(), setInteractive: vi.fn(), highlight: vi.fn(), anchors: { clearHighlight: vi.fn(), subscribe: vi.fn(() => () => {}) } }
+})
 
 function makeDummyLesson(id: string): LessonScript {
   return {
