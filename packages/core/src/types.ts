@@ -65,6 +65,8 @@ export interface Hinge {
 export interface FoldPlan {
   readonly rootFace: FaceId
   readonly hinges: readonly Hinge[]
+  /** Which cube face direction each net face (by FaceId) ends up on after folding. */
+  readonly faceAssignment: Readonly<Record<FaceId, CubeFace>>
 }
 
 export interface DistractorMeta {

@@ -89,12 +89,14 @@ export function foldNet(net: DecoratedNet): FoldResult {
   }
 
   const faces = {} as Record<CubeFace, CubeFaceState>
+  const faceAssignment = {} as Record<FaceId, CubeFace>
   for (const face of net.faces) {
     const rotation = rotationById.get(face.id)
     if (!rotation) throw new Error(`internal error: no rotation computed for face ${face.id}`)
 
     const normal = apply(rotation, [0, 0, 1])
     const cubeFace = normalToFace(normal)
+    faceAssignment[face.id] = cubeFace
 
     if (face.symbol === null) {
       faces[cubeFace] = { glyphId: null, symmetry: 'asymmetric', rotation: 0, mirrored: false }
@@ -112,5 +114,5 @@ export function foldNet(net: DecoratedNet): FoldResult {
     }
   }
 
-  return { cube: { faces }, plan: { rootFace: root.id, hinges } }
+  return { cube: { faces }, plan: { rootFace: root.id, hinges, faceAssignment } }
 }
