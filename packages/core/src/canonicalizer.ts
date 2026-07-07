@@ -14,10 +14,17 @@ function normalizedRotation(state: CubeFaceState): number {
   }
 }
 
+/** Mirroring is invariant under rotation (which never flips chirality) -- included as-is, except
+ * for null/4-fold faces where the v1 glyph set is achiral by construction. */
+function normalizedMirrored(state: CubeFaceState): boolean {
+  if (state.glyphId === null || state.symmetry === '4-fold') return false
+  return state.mirrored
+}
+
 function serialize(cube: CubeState): string {
   return CUBE_FACES.map((face) => {
     const s = cube.faces[face]
-    return `${face}:${s.glyphId ?? ''}:${normalizedRotation(s)}`
+    return `${face}:${s.glyphId ?? ''}:${normalizedRotation(s)}:${normalizedMirrored(s)}`
   }).join('|')
 }
 

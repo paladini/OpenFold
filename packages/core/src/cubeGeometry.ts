@@ -84,13 +84,14 @@ export function rotateCube(cube: CubeState, m: IMat3): CubeState {
     const sourceFace = normalToFace(sourceNormal)
     const source = cube.faces[sourceFace]
     if (source.glyphId === null) {
-      faces[face] = { glyphId: null, symmetry: source.symmetry, rotation: 0 }
+      faces[face] = { glyphId: null, symmetry: source.symmetry, rotation: 0, mirrored: false }
       continue
     }
     const sourceUp = rotationToUpVector(sourceFace, source.rotation)
     const newUp = apply(m, sourceUp)
     const newRotation = upVectorToRotation(face, newUp)
-    faces[face] = { glyphId: source.glyphId, symmetry: source.symmetry, rotation: newRotation }
+    // Rotations preserve chirality -- `mirrored` carries through unchanged.
+    faces[face] = { glyphId: source.glyphId, symmetry: source.symmetry, rotation: newRotation, mirrored: source.mirrored }
   }
   return { faces }
 }

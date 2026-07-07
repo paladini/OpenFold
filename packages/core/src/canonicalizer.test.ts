@@ -14,6 +14,7 @@ function makeCube(overrides: Partial<Record<CubeFace, Partial<CubeFaceState>>> =
       glyphId: glyphs[i] ?? null,
       symmetry: 'asymmetric',
       rotation: 0,
+      mirrored: false,
       ...overrides[face],
     }
   })
@@ -24,6 +25,7 @@ const glyphStateArb = fc.record({
   glyphId: fc.constantFrom('A', 'B', 'C', 'D', 'E', 'F'),
   symmetry: fc.constantFrom<SymbolSymmetry>('asymmetric', '2-fold', '4-fold'),
   rotation: fc.constantFrom<Rotation>(0, 90, 180, 270),
+  mirrored: fc.boolean(),
 })
 
 const cubeArb: fc.Arbitrary<CubeState> = fc
@@ -90,6 +92,28 @@ describe('canonicalize / areEquivalent', () => {
   it('blank faces (glyphId null) are equivalent regardless of their stored rotation value', () => {
     const cubeA = makeCube({ '+z': { glyphId: null, rotation: 0 } })
     const cubeB = makeCube({ '+z': { glyphId: null, rotation: 270 } })
+    expect(areEquivalent(cubeA, cubeB)).toBe(true)
+  })
+
+  it('a mirrored asymmetric symbol is never equivalent to its unmirrored original (others distinct)', () => {
+    const cubeA = makeCube({ '+z': { mirrored: false } })
+    const cubeB = makeCube({ '+z': { mirrored: true } })
+    expect(areEquivalent(cubeA, cubeB)).toBe(false)
+  })
+
+  it('mirroring is preserved under whole-cube rotation (chirality is rotation-invariant)', () => {
+    fc.assert(
+      fc.property(rotationArb, (m) => {
+        const cube = makeCube({ '+z': { mirrored: true } })
+        const rotated = rotateCube(cube, m)
+        expect(areEquivalent(cube, rotated)).toBe(true)
+      }),
+    )
+  })
+
+  it('mirroring is ignored for 4-fold symbols (the v1 glyph set is achiral at that symmetry)', () => {
+    const cubeA = makeCube({ '+z': { symmetry: '4-fold', mirrored: false } })
+    const cubeB = makeCube({ '+z': { symmetry: '4-fold', mirrored: true } })
     expect(areEquivalent(cubeA, cubeB)).toBe(true)
   })
 

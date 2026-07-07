@@ -14,7 +14,7 @@ function buildNet(canonical: CanonicalNet, glyphs: readonly (string | null)[] = 
   const faces: NetFace[] = canonical.cells.map((cell, i) => ({
     id: i as NetFace['id'],
     cell,
-    symbol: glyphs[i] ? { glyphId: glyphs[i] as string, symmetry: 'asymmetric' } : null,
+    symbol: glyphs[i] ? { glyphId: glyphs[i] as string, symmetry: 'asymmetric', mirrored: false } : null,
     symbolRotation: 0,
   }))
   return { netId: canonical.id, symmetryOp: 0, faces, adjacency: toFaceAdjacency(canonical.adjacency) }
@@ -50,18 +50,18 @@ describe('foldNet: worked example (net #6, a "T" shaped hexomino)', () => {
     const glyphsPresent = CUBE_FACES.map((f) => cube.faces[f].glyphId)
     expect(new Set(glyphsPresent)).toEqual(new Set(GLYPH_IDS))
     // Root face (face0, glyph A) always lands on +Z with rotation 0 by construction.
-    expect(cube.faces['+z']).toEqual({ glyphId: 'A', symmetry: 'asymmetric', rotation: 0 })
+    expect(cube.faces['+z']).toEqual({ glyphId: 'A', symmetry: 'asymmetric', rotation: 0, mirrored: false })
   })
 
   it('matches the verified reference output for this fixture (regression guard)', () => {
     const { cube, plan } = foldNet(net)
     expect(cube.faces).toEqual({
-      '+z': { glyphId: 'A', symmetry: 'asymmetric', rotation: 0 },
-      '-x': { glyphId: 'B', symmetry: 'asymmetric', rotation: 0 },
-      '-z': { glyphId: 'C', symmetry: 'asymmetric', rotation: 0 },
-      '-y': { glyphId: 'D', symmetry: 'asymmetric', rotation: 270 },
-      '+x': { glyphId: 'E', symmetry: 'asymmetric', rotation: 180 },
-      '+y': { glyphId: 'F', symmetry: 'asymmetric', rotation: 90 },
+      '+z': { glyphId: 'A', symmetry: 'asymmetric', rotation: 0, mirrored: false },
+      '-x': { glyphId: 'B', symmetry: 'asymmetric', rotation: 0, mirrored: false },
+      '-z': { glyphId: 'C', symmetry: 'asymmetric', rotation: 0, mirrored: false },
+      '-y': { glyphId: 'D', symmetry: 'asymmetric', rotation: 270, mirrored: false },
+      '+x': { glyphId: 'E', symmetry: 'asymmetric', rotation: 180, mirrored: false },
+      '+y': { glyphId: 'F', symmetry: 'asymmetric', rotation: 90, mirrored: false },
     })
     expect(plan.rootFace).toBe(0)
     expect(plan.hinges).toHaveLength(5)
@@ -88,7 +88,7 @@ describe('foldNet: bijection property across all nets, symmetries, and decoratio
           const faces: NetFace[] = transformedCells.map((cell, i) => ({
             id: i as NetFace['id'],
             cell,
-            symbol: { glyphId: `g${i}`, symmetry: 'asymmetric' },
+            symbol: { glyphId: `g${i}`, symmetry: 'asymmetric', mirrored: false },
             symbolRotation: rotations[i] as Rotation,
           }))
           const net: DecoratedNet = { netId: canonical.id, symmetryOp: symOp, faces, adjacency: toFaceAdjacency(canonical.adjacency) }
@@ -121,7 +121,7 @@ describe('foldNet: bijection property across all nets, symmetries, and decoratio
           const faces: NetFace[] = canonical.cells.map((cell, i) => ({
             id: i as NetFace['id'],
             cell,
-            symbol: { glyphId: `g${i}`, symmetry: 'asymmetric' },
+            symbol: { glyphId: `g${i}`, symmetry: 'asymmetric', mirrored: false },
             symbolRotation: i === rootLocalIndex ? rootRotation : 0,
           }))
           const net: DecoratedNet = { netId: canonical.id, symmetryOp: 0, faces, adjacency: toFaceAdjacency(canonical.adjacency) }
@@ -142,7 +142,7 @@ describe('foldNet: blank faces', () => {
     const { cube } = foldNet(net)
     const blankFace = CUBE_FACES.find((f) => cube.faces[f].glyphId === null)
     expect(blankFace).toBeDefined()
-    expect(cube.faces[blankFace as CubeFace]).toEqual({ glyphId: null, symmetry: 'asymmetric', rotation: 0 })
+    expect(cube.faces[blankFace as CubeFace]).toEqual({ glyphId: null, symmetry: 'asymmetric', rotation: 0, mirrored: false })
   })
 })
 

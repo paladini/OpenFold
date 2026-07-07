@@ -1,6 +1,6 @@
 import { CANONICAL_NETS } from './netCatalog'
 import type { Rng } from './prng'
-import type { DecoratedNet, FaceId, GenerationParams, NetFace, Rotation, SymbolSymmetry, SymbolTier } from './types'
+import type { DecoratedNet, FaceId, GenerationParams, NetFace, Rotation, Symbol, SymbolSymmetry, SymbolTier } from './types'
 
 /**
  * Glyph pools grouped by symmetry class. Tier selection is pedagogically deliberate:
@@ -10,21 +10,16 @@ import type { DecoratedNet, FaceId, GenerationParams, NetFace, Rotation, SymbolS
  *   symbol-mirror distractor is actually detectable -- a 4-fold glyph would make those distractor
  *   kinds invisible and defeat the point of the hard tier.
  */
-const GLYPH_LIBRARY: Readonly<Record<SymbolSymmetry, readonly string[]>> = {
+const GLYPH_LIBRARY = {
   asymmetric: ['arrow', 'flag', 'l-shape', 'boot', 'key', 'lightning'],
   '2-fold': ['bowtie', 'hourglass', 'zigzag-s', 's-curve'],
   '4-fold': ['circle-dot', 'plus-ring', 'square-ring', 'diamond-ring'],
-}
+} as const satisfies Record<SymbolSymmetry, readonly string[]>
 
-interface GlyphOption {
-  readonly glyphId: string
-  readonly symmetry: SymbolSymmetry
-}
-
-function poolForTier(tier: SymbolTier): readonly GlyphOption[] {
-  const asymmetric = GLYPH_LIBRARY.asymmetric.map((glyphId) => ({ glyphId, symmetry: 'asymmetric' as const }))
-  const twoFold = GLYPH_LIBRARY['2-fold'].map((glyphId) => ({ glyphId, symmetry: '2-fold' as const }))
-  const fourFold = GLYPH_LIBRARY['4-fold'].map((glyphId) => ({ glyphId, symmetry: '4-fold' as const }))
+function poolForTier(tier: SymbolTier): readonly Symbol[] {
+  const asymmetric = GLYPH_LIBRARY.asymmetric.map((glyphId) => ({ glyphId, symmetry: 'asymmetric' as const, mirrored: false }))
+  const twoFold = GLYPH_LIBRARY['2-fold'].map((glyphId) => ({ glyphId, symmetry: '2-fold' as const, mirrored: false }))
+  const fourFold = GLYPH_LIBRARY['4-fold'].map((glyphId) => ({ glyphId, symmetry: '4-fold' as const, mirrored: false }))
   switch (tier) {
     case 'distinct':
       return fourFold

@@ -97,14 +97,19 @@ export function foldNet(net: DecoratedNet): FoldResult {
     const cubeFace = normalToFace(normal)
 
     if (face.symbol === null) {
-      faces[cubeFace] = { glyphId: null, symmetry: 'asymmetric', rotation: 0 }
+      faces[cubeFace] = { glyphId: null, symmetry: 'asymmetric', rotation: 0, mirrored: false }
       continue
     }
 
     const upVec = apply(rotation, [0, 1, 0])
     const foldInducedRotation = upVectorToRotation(cubeFace, upVec)
     const finalRotation = ((foldInducedRotation + face.symbolRotation) % 360) as Rotation
-    faces[cubeFace] = { glyphId: face.symbol.glyphId, symmetry: face.symbol.symmetry, rotation: finalRotation }
+    faces[cubeFace] = {
+      glyphId: face.symbol.glyphId,
+      symmetry: face.symbol.symmetry,
+      rotation: finalRotation,
+      mirrored: face.symbol.mirrored,
+    }
   }
 
   return { cube: { faces }, plan: { rootFace: root.id, hinges } }

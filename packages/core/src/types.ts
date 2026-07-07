@@ -21,6 +21,12 @@ export interface GenerationParams {
 export interface Symbol {
   readonly glyphId: string
   readonly symmetry: SymbolSymmetry
+  /**
+   * Whether the glyph is drawn mirrored. Rotations never change chirality, so this bit is
+   * carried through folding/rotation unchanged -- it is orthogonal to `rotation`. Ignored for
+   * '4-fold' glyphs and null faces (the v1 glyph set was chosen to be achiral at that symmetry).
+   */
+  readonly mirrored: boolean
 }
 
 export interface NetFace {
@@ -41,6 +47,7 @@ export interface CubeFaceState {
   readonly glyphId: string | null
   readonly symmetry: SymbolSymmetry
   readonly rotation: Rotation
+  readonly mirrored: boolean
 }
 
 export interface CubeState {
@@ -63,7 +70,8 @@ export interface FoldPlan {
 export interface DistractorMeta {
   readonly index: number
   readonly kind: PerturbationKind
-  readonly affectedFaces: readonly FaceId[]
+  /** Cube face directions altered by this perturbation (perturbations operate on the folded cube). */
+  readonly affectedFaces: readonly CubeFace[]
 }
 
 export interface FoldProblem {
