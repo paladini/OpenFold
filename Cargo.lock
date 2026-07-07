@@ -1406,6 +1406,7 @@ name = "openfold-desktop"
 version = "0.1.0"
 dependencies = [
  "directories",
+ "http",
  "rust-embed",
  "serde",
  "serde_json",
