@@ -1,5 +1,6 @@
 import Dexie, { type Table } from 'dexie'
 import type { AttemptRecord, Difficulty, SessionConfig, SessionSummary } from '../telemetry/types'
+import { excludeFromLatency } from './aggregation'
 
 export interface ProfileRow {
   readonly id: string
@@ -112,7 +113,7 @@ export async function rebuildDailyStats(db: OpenFoldDB, profileId: string): Prom
     }
     row.attempts += 1
     if (a.correct) row.correct += 1
-    if (!a.suspect && !a.timedOut) {
+    if (!excludeFromLatency(a)) {
       row.latencySumMs += a.responseMs
       row.latencyCount += 1
     }

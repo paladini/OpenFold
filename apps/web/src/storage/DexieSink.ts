@@ -1,5 +1,6 @@
 import type { TelemetrySink } from '../telemetry/TelemetrySink'
 import type { AttemptRecord, SessionConfig, SessionId, SessionOutcome, SessionSummary } from '../telemetry/types'
+import { excludeFromLatency } from './aggregation'
 import { DEFAULT_PROFILE_ID, dailyStatsKey, localDateKey, openDb, OpenFoldDB, type AttemptRow, type DailyStatsRow, type SessionRow } from './db'
 
 type Unsubscribe = () => void
@@ -92,14 +93,14 @@ export class DexieSink implements TelemetrySink {
     await this.db.transaction('rw', this.db.attempts, this.db.dailyStats, async () => {
       await this.db.attempts.add(row)
       const existing = await this.db.dailyStats.get(key)
-      const excludeFromLatency = row.suspect || row.timedOut
+      const exclude = excludeFromLatency(row)
       const next: DailyStatsRow = existing
         ? {
             ...existing,
             attempts: existing.attempts + 1,
             correct: existing.correct + (row.correct ? 1 : 0),
-            latencySumMs: existing.latencySumMs + (excludeFromLatency ? 0 : row.responseMs),
-            latencyCount: existing.latencyCount + (excludeFromLatency ? 0 : 1),
+            latencySumMs: existing.latencySumMs + (exclude ? 0 : row.responseMs),
+            latencyCount: existing.latencyCount + (exclude ? 0 : 1),
           }
         : {
             key,
@@ -108,8 +109,8 @@ export class DexieSink implements TelemetrySink {
             difficulty: row.difficulty,
             attempts: 1,
             correct: row.correct ? 1 : 0,
-            latencySumMs: excludeFromLatency ? 0 : row.responseMs,
-            latencyCount: excludeFromLatency ? 0 : 1,
+            latencySumMs: exclude ? 0 : row.responseMs,
+            latencyCount: exclude ? 0 : 1,
           }
       await this.db.dailyStats.put(next)
     })
