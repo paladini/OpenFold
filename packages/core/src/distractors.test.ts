@@ -251,7 +251,7 @@ describe('generateDistractors: regression -- sparse all-4-fold decorations', () 
     // testing (index.test.ts) confirms the guarded pipeline avoids this in practice; this test
     // documents that distractors.ts alone still fails *safely* (a typed error, never an
     // ambiguous/duplicate distractor set) rather than silently.
-    const answer = fourFoldCube({ '+x': 'cross-dot', '+y': 'cross-dot', '+z': 'star-ring' })
+    const answer = fourFoldCube({ '+x': 'cross-dot', '+y': 'cross-dot', '+z': 'eight-point-star' })
     expect(() => generateDistractors(answer, createRng(0), expandPreset('easy'))).toThrow(DistractorExhaustionError)
   })
 })

@@ -18,7 +18,10 @@ export const GLYPH_LIBRARY = {
   // viable against 4-fold decorations (rotation/mirror are invisible on them), repeated glyphs
   // shrink the distinguishable-perturbation space fast on a sparsely decorated cube (easy tier
   // decorates only 3 of 6 faces). A wider pool keeps repeats rare.
-  '4-fold': ['circle-dot', 'plus-ring', 'square-ring', 'diamond-ring', 'triangle-ring', 'hex-ring', 'star-ring', 'cross-dot'],
+  // Every name here must denote a shape whose rotational symmetry order is a multiple of 4 --
+  // otherwise it isn't actually invariant at 90 degrees and doesn't belong in this tier (a
+  // triangle is 3-fold, a hexagon is 6-fold; neither qualifies, hence octagon/8-point over those).
+  '4-fold': ['circle-dot', 'plus-ring', 'square-ring', 'diamond-ring', 'quatrefoil-ring', 'octagon-ring', 'eight-point-star', 'cross-dot'],
 } as const satisfies Record<SymbolSymmetry, readonly string[]>
 
 function poolForTier(tier: SymbolTier): readonly Symbol[] {
