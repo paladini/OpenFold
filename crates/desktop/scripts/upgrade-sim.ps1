@@ -15,7 +15,7 @@ function Launch-AndWaitForReady {
     $outFile = [System.IO.Path]::GetTempFileName()
     $proc = Start-Process -FilePath $BinPath -PassThru -RedirectStandardOutput $outFile
     $ready = $false
-    for ($i = 0; $i -lt 100; $i++) {
+    for ($i = 0; $i -lt 200; $i++) {
         Start-Sleep -Milliseconds 100
         if ((Get-Content $outFile -ErrorAction SilentlyContinue) -match "openfold: ready") { $ready = $true; break }
     }

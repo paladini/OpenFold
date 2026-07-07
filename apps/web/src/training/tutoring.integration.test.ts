@@ -9,6 +9,9 @@ const PRESETS: readonly DifficultyPreset[] = ['easy', 'medium', 'hard']
 const FUZZ_COUNT = 1000
 
 describe('tutoring verification: explanation fuzz', () => {
+  // 1000 real generateProblem() calls take ~2-5s depending on machine load; comfortably under
+  // vitest's default 5000ms per-test timeout locally, but shared CI runners can be slower and
+  // trip it. Explicit generous timeout rather than a flaky pass/fail on runner contention.
   it('1000 seeded wrong answers all produce a rule-grounded, geometry-faithful explanation', () => {
     let checked = 0
     let syntacticFallbacks = 0
@@ -46,7 +49,7 @@ describe('tutoring verification: explanation fuzz', () => {
     // this just records how often each occurs across the fuzz sweep, for visibility.
     console.log(`tutoring fuzz: ${checked} checked, ${syntacticFallbacks} used the non-syntactic fallback phrasing, rules=${JSON.stringify(ruleCounts)}`)
     expect(ruleCounts.opposition + ruleCounts.orientation).toBe(checked)
-  })
+  }, 20_000)
 })
 
 const REAL_LESSONS: readonly LessonScript[] = [oppositionRuleLesson, orientationRuleLesson]
