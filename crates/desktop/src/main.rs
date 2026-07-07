@@ -1,5 +1,6 @@
 mod assets;
 mod config;
+mod ipc;
 mod protocol;
 
 fn main() {
