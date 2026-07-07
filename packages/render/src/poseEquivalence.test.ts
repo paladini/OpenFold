@@ -39,7 +39,7 @@ describe('pose-equivalence: scrub loop allocation discipline', () => {
     const container = makeContainer()
     scene.mount(container, problem, { createRenderer: makeFakeRenderer })
 
-    const netRig = (scene as unknown as { netRig: { root: import('three').Group } }).netRig
+    const netRig = (scene as unknown as { questionNetRig: { root: import('three').Group } }).questionNetRig
     const countObjects = (): number => {
       let count = 0
       netRig.root.traverse(() => {

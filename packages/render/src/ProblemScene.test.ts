@@ -1,5 +1,6 @@
-import { foldNet, generateProblem } from '@openfold/core'
+import { foldNet, generateProblem, generateUnfoldProblem } from '@openfold/core'
 import { beforeAll, describe, expect, it } from 'vitest'
+import type { MeshBasicMaterial } from 'three'
 import { ProblemScene, type MinimalRenderer } from './ProblemScene'
 import { installFakeCanvasContext } from './testSupport/fakeCanvasContext'
 
@@ -136,8 +137,8 @@ describe('ProblemScene: selection wiring', () => {
     // Answer cube index 2 sits at world x=0, y=ANSWER_Y, z=0 (see ProblemScene's own layout
     // constants); project it through the same camera to get its expected client coordinates.
     const camera = (scene as unknown as { camera: import('three').PerspectiveCamera }).camera
-    const answerRigs = (scene as unknown as { answerRigs: Array<{ group: import('three').Group }> }).answerRigs
-    const worldPos = answerRigs[2]?.group.position.clone() as import('three').Vector3
+    const optionCubeRigs = (scene as unknown as { optionCubeRigs: Array<{ group: import('three').Group }> }).optionCubeRigs
+    const worldPos = optionCubeRigs[2]?.group.position.clone() as import('three').Vector3
     const ndc = worldPos.project(camera)
     const clientX = ((ndc.x + 1) / 2) * 800
     const clientY = ((1 - ndc.y) / 2) * 600
@@ -158,6 +159,100 @@ describe('ProblemScene: selection wiring', () => {
     scene.mount(container, problem, { createRenderer: makeFakeRenderer })
     expect(() => scene.setInteractive(false)).not.toThrow()
     expect(() => scene.setInteractive(true)).not.toThrow()
+    scene.dispose()
+  })
+})
+
+describe('ProblemScene: unfold mode', () => {
+  it('mounts a question cube and 5 net options without throwing', () => {
+    const problem = generateUnfoldProblem(1, 'easy')
+    const scene = new ProblemScene()
+    const container = makeContainer()
+    expect(() => scene.mount(container, problem, { createRenderer: makeFakeRenderer })).not.toThrow()
+
+    const questionCubeRig = (scene as unknown as { questionCubeRig: unknown }).questionCubeRig
+    const optionNetRigs = (scene as unknown as { optionNetRigs: unknown[] }).optionNetRigs
+    expect(questionCubeRig).not.toBeNull()
+    expect(optionNetRigs).toHaveLength(5)
+    scene.dispose()
+  })
+
+  it('playFold/playUnfold are no-ops (nothing to animate) and resolve immediately', async () => {
+    const problem = generateUnfoldProblem(2, 'easy')
+    const scene = new ProblemScene()
+    const container = makeContainer()
+    scene.mount(container, problem, { createRenderer: makeFakeRenderer })
+    await expect(scene.playFold()).resolves.toBeUndefined()
+    await expect(scene.playUnfold()).resolves.toBeUndefined()
+    scene.dispose()
+  })
+
+  it('computeFoldedState() throws in unfold mode (no fold animation to verify)', () => {
+    const problem = generateUnfoldProblem(3, 'easy')
+    const scene = new ProblemScene()
+    const container = makeContainer()
+    scene.mount(container, problem, { createRenderer: makeFakeRenderer })
+    expect(() => scene.computeFoldedState()).toThrow()
+    scene.dispose()
+  })
+
+  it('showFeedback tints every mesh in the correct and chosen net option subtrees', async () => {
+    const problem = generateUnfoldProblem(4, 'easy')
+    const scene = new ProblemScene()
+    const container = makeContainer()
+    scene.mount(container, problem, { createRenderer: makeFakeRenderer })
+    const wrongIndex = (problem.correctIndex + 1) % 5
+
+    const optionNetRigs = (scene as unknown as { optionNetRigs: Array<{ root: import('three').Group }> }).optionNetRigs
+    const { Mesh: MeshCtor } = await import('three')
+    const meshesOf = (root: import('three').Group): import('three').Mesh[] => {
+      const out: import('three').Mesh[] = []
+      root.traverse((obj) => {
+        if (obj instanceof MeshCtor) out.push(obj)
+      })
+      return out
+    }
+    const correctRig = optionNetRigs[problem.correctIndex] as (typeof optionNetRigs)[number]
+    const wrongRig = optionNetRigs[wrongIndex] as (typeof optionNetRigs)[number]
+    const correctMeshesBefore = meshesOf(correctRig.root).map((m) => (m.material as MeshBasicMaterial).color.getHex())
+
+    scene.showFeedback(problem.correctIndex, wrongIndex)
+
+    const correctMeshesAfter = meshesOf(correctRig.root)
+    expect(correctMeshesAfter.length).toBeGreaterThan(0)
+    for (const mesh of correctMeshesAfter) {
+      expect((mesh.material as MeshBasicMaterial).color.getHex()).toBe(0x22c55e)
+    }
+    // Sanity: colors actually changed from whatever they started as (not already green).
+    expect(correctMeshesBefore.every((c) => c === 0x22c55e)).toBe(false)
+
+    const wrongMeshesAfter = meshesOf(wrongRig.root)
+    for (const mesh of wrongMeshesAfter) {
+      expect((mesh.material as MeshBasicMaterial).color.getHex()).toBe(0xef4444)
+    }
+    scene.dispose()
+  })
+
+  it('a pointerdown at a net option selects it', () => {
+    const problem = generateUnfoldProblem(5, 'easy')
+    const scene = new ProblemScene()
+    const container = makeContainer()
+    scene.mount(container, problem, { createRenderer: makeFakeRenderer })
+
+    const canvas = container.querySelector('canvas') as HTMLCanvasElement
+    canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width: 800, height: 600 }) as DOMRect
+
+    const camera = (scene as unknown as { camera: import('three').PerspectiveCamera }).camera
+    const optionNetRigs = (scene as unknown as { optionNetRigs: Array<{ root: import('three').Group }> }).optionNetRigs
+    const worldPos = optionNetRigs[1]?.root.position.clone() as import('three').Vector3
+    const ndc = worldPos.project(camera)
+    const clientX = ((ndc.x + 1) / 2) * 800
+    const clientY = ((1 - ndc.y) / 2) * 600
+
+    const selected: number[] = []
+    scene.onSelect((i) => selected.push(i))
+    canvas.dispatchEvent(new MouseEvent('pointerdown', { clientX, clientY, bubbles: true }))
+    expect(selected).toEqual([1])
     scene.dispose()
   })
 })
