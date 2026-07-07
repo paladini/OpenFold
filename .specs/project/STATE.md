@@ -30,7 +30,7 @@ _None currently._
 
 - [x] M0: initialize git repo + pnpm/cargo workspaces (first execution task, `procedural-engine/tasks.md` Phase 0) — done 2026-07-07
 - [x] Choose final glyph/symbol set for face decorations before PROC implementation — done: `netGenerator.ts` GLYPH_LIBRARY (6 asymmetric, 4 2-fold, 8 4-fold)
-- [ ] Verify current wry/tao crate versions and WebView2 bootstrap strategy at M6 start (versions move fast; re-run knowledge verification chain then)
+- [x] Verify current wry/tao crate versions and WebView2 bootstrap strategy at M6 start — done 2026-07-07: `wry = "0.55"` (0.55.1), `tao = "0.35"` (0.35.0), `rust-embed = "8.11"`, `directories = "6"`, `serde`/`serde_json = "1"`. `WebViewBuilder::with_custom_protocol(name, Fn(WebViewId, Request<Vec<u8>>) -> Response<Cow<'static,[u8]>>)` and `with_ipc_handler(Fn(Request<String>))` confirmed via docs.rs and validated by `cargo build`.
 - [ ] Cross-engine determinism check: `fuzz.test.ts`'s golden-file test only verifies byte-identical output on V8/Node (Vitest). True cross-engine verification (JavaScriptCore/WebKit, used by the desktop shell's webview on macOS) needs a one-time manual run inside an actual WebView2/WKWebView/WebKitGTK context at M6 — do this before relying on the determinism claim across platforms.
 
 ## Deferred ideas
