@@ -89,3 +89,4 @@ export { expandPreset, resolveParams, validateParams, validateSeed } from './par
 export { createRng } from './prng'
 export type { Rng } from './prng'
 export { CANONICAL_NETS, normalizeNet } from './netCatalog'
+export type { CanonicalNet } from './netCatalog'
