@@ -1,0 +1,135 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build (${{ matrix.label }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: windows-x64
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            label: macos-x64
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            label: macos-arm64
+            target: aarch64-apple-darwin
+          - os: ubuntu-latest
+            label: linux-x64
+            target: x86_64-unknown-linux-gnu
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: release-${{ matrix.label }}
+      - name: Install webview build dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev
+      - name: Build the SPA bundle
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @openfold/web run build
+      - run: cargo build --release -p openfold-desktop --target ${{ matrix.target }}
+
+      # v1 packaging (spec DESK-05 AC1): a portable/zipped binary per OS. Full installers (Windows
+      # MSI via cargo-wix, a properly bundled macOS .app with Info.plist/codesigning, a real Linux
+      # AppImage) are documented as a deliberate v1 gap -- see the note artifact below -- rather
+      # than shipped as unverified packaging scripts nobody has run on a real macOS/Linux machine.
+      - name: Package (Windows portable zip)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $dest = "openfold-desktop-${{ matrix.label }}"
+          New-Item -ItemType Directory -Path $dest | Out-Null
+          Copy-Item "target/${{ matrix.target }}/release/openfold-desktop.exe" "$dest/OpenFold.exe"
+          Compress-Archive -Path $dest -DestinationPath "$dest.zip"
+      - name: Package (macOS/Linux tar.gz)
+        if: matrix.os != 'windows-latest'
+        run: |
+          dest="openfold-desktop-${{ matrix.label }}"
+          mkdir -p "$dest"
+          cp "target/${{ matrix.target }}/release/openfold-desktop" "$dest/openfold-desktop"
+          tar -czf "$dest.tar.gz" "$dest"
+
+      - name: Record artifact size
+        shell: bash
+        run: |
+          for f in openfold-desktop-${{ matrix.label }}.zip openfold-desktop-${{ matrix.label }}.tar.gz; do
+            if [ -f "$f" ]; then
+              size=$(stat -c%s "$f" 2>/dev/null || stat -f%z "$f")
+              echo "$f: $size bytes" | tee -a artifact-sizes.txt
+            fi
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openfold-desktop-${{ matrix.label }}
+          path: |
+            openfold-desktop-${{ matrix.label }}.zip
+            openfold-desktop-${{ matrix.label }}.tar.gz
+            artifact-sizes.txt
+          if-no-files-found: ignore
+          retention-days: 90
+
+  upgrade-simulation:
+    name: IndexedDB upgrade simulation (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @openfold/web run build
+      - run: pwsh crates/desktop/scripts/upgrade-sim.ps1
+
+  release:
+    name: Publish release
+    needs: [build, upgrade-simulation]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create GitHub release with all artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*.{zip,tar.gz}
+          generate_release_notes: true
+          body: |
+            See `docs/desktop-parity-checklist.md` for the manual smoke-test checklist run against this build.
+
+            **Known v1 packaging gaps** (spec DESK-05, documented rather than silently missing):
+            - Windows: portable zip only, no MSI installer yet.
+            - macOS: raw binary in a tar.gz, not a signed/notarized `.app` bundle.
+            - Linux: raw binary in a tar.gz, not an AppImage/deb yet.
+            - If the Windows machine lacks the WebView2 Runtime, the app shows a native dialog linking to the [Evergreen Bootstrapper](https://developer.microsoft.com/microsoft-edge/webview2/) rather than failing silently.
