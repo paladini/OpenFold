@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = ["crates/desktop"]
+
+[profile.release]
+lto = true
+opt-level = "z"
+strip = true
+panic = "abort"

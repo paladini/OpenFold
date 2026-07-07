@@ -1,0 +1,9 @@
+[package]
+name = "openfold-desktop"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "openfold-desktop"
+path = "src/main.rs"
