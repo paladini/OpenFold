@@ -20,13 +20,17 @@ _None currently._
 
 ## Lessons
 
-_None yet — project pre-implementation._
+- Rotation-only vs. full affine transforms matter: applying a `ScrewMotion`'s translation to a direction vector (face normal/up vector) instead of just its rotation component produces nonsense (a non-unit vector). A property test in `heuristics.test.ts` caught this immediately — direction vectors must only ever go through `apply(matrix, v)`, never `applyScrew`.
+- A pure 3-cycle of one cube corner (3 mutually-adjacent faces) is mathematically identical to a genuine 120° rotation of the whole cube whenever the opposite corner looks unchanged under that same rotation (e.g. blank, or uniformly 4-fold-symmetric) — discovered via real `DistractorExhaustionError`s in testing, not a hypothetical. This makes random-sampling from a small perturbation candidate space fragile; `distractors.ts` now enumerates every candidate exhaustively instead (candidate spaces are small and bounded: ≤3, ≤16, or a handful per face).
+- 4-fold (fully rotation-symmetric) glyphs carry zero orientation information, so a fully-blank opposite face pair hands the cube a "free" hidden rotation symmetry. `netGenerator.generateNet` now verifies (via an actual fold) that no opposite pair is fully blank when `symbolTier === 'distinct'`, redrawing if so.
+- When validating a generation pipeline empirically, prefer a throwaway scratch script (`node` one-off, or a scratch `.test.ts` deleted before commit) to hand-deriving 3D rotation matrix products — manual matrix arithmetic is error-prone (caught one sign-slip mistake this way) and the actual implementation is the authoritative source of truth once its own invariants are independently verified.
 
 ## Todos
 
-- [ ] M0: initialize git repo + pnpm/cargo workspaces (first execution task, `procedural-engine/tasks.md` Phase 0)
-- [ ] Choose final glyph/symbol set for face decorations before PROC implementation (constraint: must include rotationally-symmetric and orientation-sensitive tiers; see `procedural-engine/design.md` §Difficulty Model)
+- [x] M0: initialize git repo + pnpm/cargo workspaces (first execution task, `procedural-engine/tasks.md` Phase 0) — done 2026-07-07
+- [x] Choose final glyph/symbol set for face decorations before PROC implementation — done: `netGenerator.ts` GLYPH_LIBRARY (6 asymmetric, 4 2-fold, 8 4-fold)
 - [ ] Verify current wry/tao crate versions and WebView2 bootstrap strategy at M6 start (versions move fast; re-run knowledge verification chain then)
+- [ ] Cross-engine determinism check: `fuzz.test.ts`'s golden-file test only verifies byte-identical output on V8/Node (Vitest). True cross-engine verification (JavaScriptCore/WebKit, used by the desktop shell's webview on macOS) needs a one-time manual run inside an actual WebView2/WKWebView/WebKitGTK context at M6 — do this before relying on the determinism claim across platforms.
 
 ## Deferred ideas
 
