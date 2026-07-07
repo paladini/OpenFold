@@ -1,30 +1,7 @@
 import { CUBE_FACES, type CubeFace, type CubeState } from '@openfold/core'
 import { BufferAttribute, BufferGeometry, DoubleSide, Group, Matrix4, Mesh, MeshBasicMaterial, Vector3 } from 'three'
+import { AXIS_VECTORS as FACE_NORMALS, CANONICAL_UP } from './cubeConventions'
 import type { SymbolAtlas } from './SymbolAtlas'
-
-const FACE_NORMALS: Readonly<Record<CubeFace, Vector3>> = {
-  '+x': new Vector3(1, 0, 0),
-  '-x': new Vector3(-1, 0, 0),
-  '+y': new Vector3(0, 1, 0),
-  '-y': new Vector3(0, -1, 0),
-  '+z': new Vector3(0, 0, 1),
-  '-z': new Vector3(0, 0, -1),
-}
-
-/**
- * Same canonical "up" reference per face as core's cubeGeometry.ts (faces on the x/z axes use
- * world +Y as their rotation=0 reference; faces on the y axis use world +Z, since +Y can't serve
- * as its own perpendicular reference there). Keeping this convention identical between packages
- * is what the render <-> core pose-equivalence check (ProblemScene.computeFoldedState) verifies.
- */
-const CANONICAL_UP: Readonly<Record<CubeFace, Vector3>> = {
-  '+x': new Vector3(0, 1, 0),
-  '-x': new Vector3(0, 1, 0),
-  '+z': new Vector3(0, 1, 0),
-  '-z': new Vector3(0, 1, 0),
-  '+y': new Vector3(0, 0, 1),
-  '-y': new Vector3(0, 0, 1),
-}
 
 function faceBasisMatrix(face: CubeFace): Matrix4 {
   const zAxis = FACE_NORMALS[face].clone()
