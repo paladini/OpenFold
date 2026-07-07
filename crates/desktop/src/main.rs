@@ -64,11 +64,20 @@ fn main() {
 
     let webview_cell: Rc<RefCell<Option<wry::WebView>>> = Rc::new(RefCell::new(None));
     let ipc_cell = webview_cell.clone();
+    // Printed once, the first time the SPA's own startup ping roundtrips -- this is what the
+    // desktop CI job's cold-start budget measurement watches for (design.md's footprint method:
+    // "time from process spawn to a ping roundtrip initiated by the SPA's first frame").
+    let ready_announced = Rc::new(std::cell::Cell::new(false));
+    let ready_cell = ready_announced.clone();
 
     let webview_result = WebViewBuilder::new_with_web_context(&mut web_context)
         .with_custom_protocol(PROTOCOL_SCHEME.to_string(), |_id, request| protocol::handle(&request))
         .with_ipc_handler(move |request: http::Request<String>| {
             let response = ipc::route(request.body());
+            if !ready_cell.get() && request.body().contains("\"ping\"") {
+                ready_cell.set(true);
+                println!("openfold: ready");
+            }
             if let Some(webview) = ipc_cell.borrow().as_ref() {
                 let script = format!("(function(e){{ window.__openfoldResolve && window.__openfoldResolve(e.id, e); }})({response})");
                 let _ = webview.evaluate_script(&script);
