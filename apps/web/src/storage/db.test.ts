@@ -49,6 +49,15 @@ describe('openDb', () => {
     expect(settings?.pendingSessionId).toBe('was-in-progress') // untouched by the second bootstrap
     second.close()
   })
+
+  it('two concurrent openDb calls against the same database name (e.g. StrictMode double-invoke) do not throw or duplicate the profile', async () => {
+    const name = freshDbName()
+    const [first, second] = await Promise.all([openDb(new OpenFoldDB(name)), openDb(new OpenFoldDB(name))])
+    const profiles = await first.profiles.toArray()
+    expect(profiles).toHaveLength(1)
+    first.close()
+    second.close()
+  })
 })
 
 describe('localDateKey / dailyStatsKey', () => {

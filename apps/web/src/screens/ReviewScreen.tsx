@@ -1,5 +1,5 @@
 import { generateProblem, generateUnfoldProblem, type FoldProblem, type UnfoldProblem } from '@openfold/core'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useProblemScene } from '../hooks/useProblemScene'
 import type { ItemMode, SessionConfig } from '../telemetry/types'
 
@@ -21,7 +21,9 @@ function regenerate(request: ReviewRequest): FoldProblem | UnfoldProblem {
 
 export function ReviewScreen({ request, onClose }: ReviewScreenProps): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
-  const problem = regenerate(request)
+  // Regeneration is pure but not free (folds/canonicalizes); memoized so identity is stable across
+  // re-renders too -- useProblemScene remounts the scene whenever `problem`'s reference changes.
+  const problem = useMemo(() => regenerate(request), [request])
   const { scene, error } = useProblemScene(containerRef, problem)
 
   useEffect(() => {

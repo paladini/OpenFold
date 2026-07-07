@@ -74,14 +74,23 @@ export function localDateKey(epochMs: number): string {
   return `${y}-${m}-${day}`
 }
 
-/** Opens the DB and bootstraps the default profile + its settings row on first run (idempotent). */
+/**
+ * Opens the DB and bootstraps the default profile + its settings row on first run (idempotent).
+ * The check-then-insert runs inside one read-write transaction so two concurrent callers opening
+ * separate connections to the same database (e.g. React StrictMode's double-invoked boot effect,
+ * or two tabs on a truly first-ever launch) can't both observe "missing" and both try to insert --
+ * IndexedDB serializes overlapping rw transactions on the same stores across connections, so the
+ * second caller's transaction re-reads and correctly sees the first caller's insert.
+ */
 export async function openDb(db: OpenFoldDB = new OpenFoldDB()): Promise<OpenFoldDB> {
   await db.open()
-  const existing = await db.profiles.get(DEFAULT_PROFILE_ID)
-  if (!existing) {
-    await db.profiles.add({ id: DEFAULT_PROFILE_ID, name: 'Default', createdAt: Date.now() })
-    await db.settings.add({ profileId: DEFAULT_PROFILE_ID, lastRoundConfig: null, uiPrefs: {}, pendingSessionId: null })
-  }
+  await db.transaction('rw', db.profiles, db.settings, async () => {
+    const existing = await db.profiles.get(DEFAULT_PROFILE_ID)
+    if (!existing) {
+      await db.profiles.add({ id: DEFAULT_PROFILE_ID, name: 'Default', createdAt: Date.now() })
+      await db.settings.add({ profileId: DEFAULT_PROFILE_ID, lastRoundConfig: null, uiPrefs: {}, pendingSessionId: null })
+    }
+  })
   return db
 }
 
