@@ -22,11 +22,11 @@ export function SummaryScreen({ state, onRetry, onNewRound, generateSeed = rando
   const { summary, completedItems, config, outcome } = state
 
   return (
-    <div>
+    <div data-testid="results-screen">
       {outcome === 'aborted' && <p role="status">Round aborted -- showing partial results</p>}
       <dl>
         <dt>Accuracy</dt>
-        <dd>{formatAccuracy(summary.accuracy)}</dd>
+        <dd data-testid="accuracy-score">{formatAccuracy(summary.accuracy)}</dd>
         <dt>Correct</dt>
         <dd>
           {summary.correct} / {summary.attempts}

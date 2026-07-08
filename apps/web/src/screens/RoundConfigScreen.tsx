@@ -46,10 +46,10 @@ export function RoundConfigScreen({ initialConfig, onStart, generateSeed = rando
   }
 
   return (
-    <form aria-label="Round configuration" onSubmit={handleSubmit}>
+    <form aria-label="Round configuration" onSubmit={handleSubmit} data-testid="round-config-form">
       <label>
         Difficulty
-        <select value={difficulty} onChange={(e) => setDifficulty(e.target.value as Difficulty)}>
+        <select data-testid="difficulty-select" value={difficulty} onChange={(e) => setDifficulty(e.target.value as Difficulty)}>
           <option value="easy">Easy</option>
           <option value="medium">Medium</option>
           <option value="hard">Hard</option>
@@ -60,6 +60,7 @@ export function RoundConfigScreen({ initialConfig, onStart, generateSeed = rando
         Problem count
         <input
           type="number"
+          data-testid="problem-count-input"
           aria-label="Problem count"
           value={problemCount}
           min={5}
@@ -98,7 +99,7 @@ export function RoundConfigScreen({ initialConfig, onStart, generateSeed = rando
 
       {error && <p role="alert">{error}</p>}
 
-      <button type="submit" disabled={error !== null}>
+      <button type="submit" data-testid="start-button" disabled={error !== null}>
         Start round
       </button>
     </form>

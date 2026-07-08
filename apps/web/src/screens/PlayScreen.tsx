@@ -81,13 +81,13 @@ export function PlayScreen({ state, onSceneReady, onSelect, onNext, onAbort, fee
       <p>
         Item {state.itemIndex + 1} of {state.config.problemCount}
       </p>
-      <p aria-live="polite">{remainingMs === null ? 'Unlimited time' : `Time left: ${formatSeconds(remainingMs)}`}</p>
+      <p data-testid="round-timer" aria-live="polite">{remainingMs === null ? 'Unlimited time' : `Time left: ${formatSeconds(remainingMs)}`}</p>
       {error && <p role="alert">{error.message}</p>}
-      <div ref={containerRef} data-testid="scene-container" />
+      <div ref={containerRef} data-testid="cube-view" />
       {state.phase === 'answering' && (
         <div role="group" aria-label="Answer options">
           {Array.from({ length: OPTION_COUNT }, (_, i) => (
-            <button key={i} type="button" onClick={() => onSelect(i)}>
+            <button key={i} type="button" data-testid="answer-button" onClick={() => onSelect(i)}>
               {i + 1}
             </button>
           ))}
@@ -95,14 +95,14 @@ export function PlayScreen({ state, onSceneReady, onSelect, onNext, onAbort, fee
       )}
       {state.phase === 'feedback' && (
         <div>
-          <p>{state.lastResult.timedOut ? 'Timed out' : state.lastResult.correct ? 'Correct!' : 'Incorrect'}</p>
+          <p data-testid="feedback-message">{state.lastResult.timedOut ? 'Timed out' : state.lastResult.correct ? 'Correct!' : 'Incorrect'}</p>
           {state.item.mode === 'fold' && (
             <button type="button" onClick={handleReplay}>
               Replay fold
             </button>
           )}
           {feedbackSlot?.({ item: state.item, result: state.lastResult, scene })}
-          <button type="button" onClick={onNext}>
+          <button type="button" data-testid="next-button" onClick={onNext}>
             Next
           </button>
         </div>
