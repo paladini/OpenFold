@@ -107,7 +107,7 @@ export function PlayScreen({ state, onSceneReady, onSelect, onNext, onAbort, fee
           </button>
         </div>
       )}
-      <button type="button" onClick={onAbort}>
+      <button type="button" data-testid="abort-button" onClick={onAbort}>
         Abort round
       </button>
     </div>
