@@ -1,24 +1,25 @@
-# OpenFold
+﻿# OpenFold
 
-**[v1.0.0](https://github.com/your-org/openfold/releases/tag/v1.0.0) — Offline-Only, Fully Local**
+<img alt="Harness Score L0" src="https://paladini.github.io/harness-score/maturity/badge-l0.svg" height="20">
+**[v1.0.0](https://github.com/your-org/openfold/releases/tag/v1.0.0) â€” Offline-Only, Fully Local**
 
-A free, open-source, cross-platform educational simulator for training Spatial Ability (Gv factor) — mental rotation and spatial visualization through procedurally generated cube net folding/unfolding exercises. Built for learners preparing for psychometric aptitude tests (Wonderlic, DAT, BMCT) and anyone who wants to train spatial reasoning.
+A free, open-source, cross-platform educational simulator for training Spatial Ability (Gv factor) â€” mental rotation and spatial visualization through procedurally generated cube net folding/unfolding exercises. Built for learners preparing for psychometric aptitude tests (Wonderlic, DAT, BMCT) and anyone who wants to train spatial reasoning.
 
-Every problem is procedurally generated and mathematically verified — there are no static image banks, no finite item sets to memorize, and no network calls. All training data stays on your device. Works entirely offline after download.
+Every problem is procedurally generated and mathematically verified â€” there are no static image banks, no finite item sets to memorize, and no network calls. All training data stays on your device. Works entirely offline after download.
 
 ## v1.0.0 Status
 
-**Release-Ready — all 6 core features complete.**
+**Release-Ready â€” all 6 core features complete.**
 
-- ✅ Procedural generation engine (11 nets, deterministic PRNG)
-- ✅ 3D rendering & animation (Three.js)
-- ✅ Playable rounds (config, timer, feedback)
-- ✅ Telemetry & charts (IndexedDB, Recharts)
-- ✅ Guided training (Opposition + Orientation Rules)
-- ✅ Desktop shell (Windows, macOS, Linux)
-- ✅ WCAG 2.1 AA accessibility (keyboard-only, reduced-motion)
-- ✅ E2E testing (Playwright)
-- ✅ Performance baselines (< 200ms generation, < 500ms submission)
+- âœ… Procedural generation engine (11 nets, deterministic PRNG)
+- âœ… 3D rendering & animation (Three.js)
+- âœ… Playable rounds (config, timer, feedback)
+- âœ… Telemetry & charts (IndexedDB, Recharts)
+- âœ… Guided training (Opposition + Orientation Rules)
+- âœ… Desktop shell (Windows, macOS, Linux)
+- âœ… WCAG 2.1 AA accessibility (keyboard-only, reduced-motion)
+- âœ… E2E testing (Playwright)
+- âœ… Performance baselines (< 200ms generation, < 500ms submission)
 
 **Known v1.0.0 Limitations:**
 - Offline-only (no cloud sync, no user accounts)
@@ -35,11 +36,11 @@ See [CHANGELOG.md](CHANGELOG.md) for full details and [RELEASING.md](RELEASING.m
 
 ```
 OpenFold/
-├── .specs/            # TLC spec-driven documentation (start here)
-├── packages/core/      # Pure TypeScript: net generation, fold mapping, distractor generation
-├── packages/render/    # Three.js: 3D scene, fold animation, interaction
-├── apps/web/           # React + Vite SPA: game loop, telemetry dashboard, tutorials
-└── crates/desktop/     # Rust (wry + tao): native desktop wrapper
+â”œâ”€â”€ .specs/            # TLC spec-driven documentation (start here)
+â”œâ”€â”€ packages/core/      # Pure TypeScript: net generation, fold mapping, distractor generation
+â”œâ”€â”€ packages/render/    # Three.js: 3D scene, fold animation, interaction
+â”œâ”€â”€ apps/web/           # React + Vite SPA: game loop, telemetry dashboard, tutorials
+â””â”€â”€ crates/desktop/     # Rust (wry + tao): native desktop wrapper
 ```
 
 ## Getting started
@@ -60,8 +61,8 @@ pnpm --filter @openfold/web dev
 
 ## Tech stack
 
-TypeScript (strict) · Three.js · React · Recharts · Dexie (IndexedDB) · Rust (wry + tao) for the desktop wrapper.
+TypeScript (strict) Â· Three.js Â· React Â· Recharts Â· Dexie (IndexedDB) Â· Rust (wry + tao) for the desktop wrapper.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT â€” see [LICENSE](LICENSE).
