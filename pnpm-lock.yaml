@@ -23,6 +23,9 @@ importers:
       eslint:
         specifier: ^9.19.0
         version: 9.39.4
+      harness-score:
+        specifier: ^1.3.2
+        version: 1.3.2
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
@@ -1333,6 +1336,11 @@ packages:
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
+
+  harness-score@1.3.2:
+    resolution: {integrity: sha512-ijfOLwmoz4ptUkrzQADppIHvb+R+NTx1PxRLLKDtR1szo8m0zCRhQyAq0R3lbZJsRK8lsIw0j5Ii9KhflOhq7g==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
@@ -3192,6 +3200,8 @@ snapshots:
   globals@14.0.0: {}
 
   gopd@1.2.0: {}
+
+  harness-score@1.3.2: {}
 
   has-flag@4.0.0: {}
 
