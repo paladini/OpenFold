@@ -1,6 +1,6 @@
 # OpenFold
 
-<a href="https://paladini.github.io/harness-score/guide/maturity-model#l0-unharnessed" title="Harness Score — AI coding harness maturity"><img alt="Harness Score L0 (Unharnessed): measures AI-assisted development harness maturity with harness-score" src="https://paladini.github.io/harness-score/maturity/badge-l0.svg" height="20"></a>
+<a href="https://paladini.io/harness-score/guide/maturity-model#l0-%C2%B7-unharnessed" title="Harness Score — AI coding harness maturity"><img alt="Harness Score L0 (Unharnessed): measures AI-assisted development harness maturity with harness-score" src="https://paladini.github.io/harness-score/maturity/badge-l0.svg" height="20"></a>
 **[v1.0.0](https://github.com/your-org/openfold/releases/tag/v1.0.0) ÔÇö Offline-Only, Fully Local**
 
 A free, open-source, cross-platform educational simulator for training Spatial Ability (Gv factor) ÔÇö mental rotation and spatial visualization through procedurally generated cube net folding/unfolding exercises. Built for learners preparing for psychometric aptitude tests (Wonderlic, DAT, BMCT) and anyone who wants to train spatial reasoning.
